@@ -1,0 +1,1979 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#e5d1c9">
+    <title>Our Little World</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+
+      :root {
+        color-scheme: light;
+        --ink: #382128;
+        --muted: #674c50;
+        --rose: #8e3041;
+        --pink: #cf858b;
+        --lilac: #b39b89;
+        --butter: #d6b77c;
+        --paper: #f1e2d7;
+        --line: rgba(67, 35, 39, .22);
+        --shadow: 0 22px 70px rgba(67, 35, 39, .2);
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        --pointer-x: 50%;
+        --pointer-y: 18%;
+        margin: 0;
+        overflow-x: hidden;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 30rem 26rem at var(--pointer-x) var(--pointer-y), rgba(170, 82, 86, .18), transparent 78%),
+          radial-gradient(ellipse at 4% 12%, rgba(207, 133, 139, .34), transparent 30rem),
+          radial-gradient(ellipse at 94% 36%, rgba(179, 155, 137, .32), transparent 31rem),
+          #e5d1c9;
+        font-family: "DM Sans", sans-serif;
+        line-height: 1.65;
+      }
+
+      body.is-locked { overflow: hidden; }
+
+      .ambient-orbs { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
+      #site-content { position: relative; z-index: 1; }
+      .ambient-orbs span { position: absolute; width: 23rem; aspect-ratio: 1; border-radius: 50%; filter: blur(2px); opacity: .18; }
+      .ambient-orbs span:nth-child(1) { top: 12%; left: -12rem; background: radial-gradient(circle, #c45e68, transparent 70%); animation: orb-drift 19s ease-in-out infinite alternate; }
+      .ambient-orbs span:nth-child(2) { top: 42%; right: -14rem; background: radial-gradient(circle, #bba78e, transparent 70%); animation: orb-drift 24s ease-in-out infinite alternate-reverse; }
+      .ambient-orbs span:nth-child(3) { bottom: -16rem; left: 34%; background: radial-gradient(circle, #d1847a, transparent 70%); animation: orb-drift 21s ease-in-out infinite alternate; }
+
+      .floral-backdrop { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
+      .floral-backdrop span {
+        position: absolute;
+        color: #a33d4b;
+        font-family: "Playfair Display", serif;
+        line-height: 1;
+        opacity: .14;
+        animation: flower-drift 18s ease-in-out infinite alternate;
+      }
+      .floral-backdrop span:nth-child(1) { top: 12%; left: 8%; font-size: clamp(3rem, 8vw, 7rem); }
+      .floral-backdrop span:nth-child(2) { top: 36%; right: 7%; color: #bd806b; font-size: clamp(2.5rem, 6vw, 5rem); animation-delay: -5s; }
+      .floral-backdrop span:nth-child(3) { top: 69%; left: 12%; color: #bd806b; font-size: clamp(2rem, 5vw, 4rem); animation-delay: -9s; }
+      .floral-backdrop span:nth-child(4) { top: 83%; right: 16%; font-size: clamp(2.5rem, 6vw, 5rem); animation-delay: -3s; }
+      body.is-locked .floral-backdrop span { opacity: 0; }
+      body.is-unlocking .floral-backdrop span { animation: flower-reveal 1.5s cubic-bezier(.16,.75,.22,1) var(--flower-delay, .3s) both; }
+      .floral-backdrop span:nth-child(2) { --flower-delay: .6s; }
+      .floral-backdrop span:nth-child(3) { --flower-delay: .9s; }
+      .floral-backdrop span:nth-child(4) { --flower-delay: 1.2s; }
+
+      @keyframes flower-reveal {
+        from { opacity: 0; transform: scale(.35) rotate(-30deg); }
+        to { opacity: .14; transform: scale(1) rotate(0); }
+      }
+
+      @keyframes flower-drift {
+        from { transform: translateY(0) rotate(-8deg); }
+        to { transform: translateY(-18px) rotate(9deg); }
+      }
+
+      .floral-foreground {
+        position: fixed;
+        z-index: 1;
+        right: 0;
+        bottom: -24px;
+        left: 0;
+        display: flex;
+        justify-content: space-between;
+        overflow: hidden;
+        pointer-events: none;
+        opacity: .78;
+        transition: opacity .6s ease;
+      }
+      body.is-locked .floral-foreground { opacity: 0; }
+      .foreground-bloom { width: clamp(125px, 19vw, 240px); height: auto; flex: 0 1 auto; transform-origin: bottom center; }
+      .foreground-bloom--right { transform: scaleX(-1); }
+      body.is-unlocking .foreground-bloom { animation: foreground-arrive 1.8s cubic-bezier(.16,.75,.22,1) 1.45s both; }
+      body.is-unlocking .foreground-bloom--right { animation-name: foreground-arrive-right; }
+      @keyframes foreground-arrive {
+        0% { opacity: 0; transform: translateY(55px) scale(.78); }
+        72% { opacity: .9; transform: translateY(-7px) scale(1.03); }
+        100% { opacity: .78; transform: translateY(0) scale(1); }
+      }
+      @keyframes foreground-arrive-right {
+        0% { opacity: 0; transform: translateY(55px) scale(-.78,.78); }
+        72% { opacity: .9; transform: translateY(-7px) scale(-1.03,1.03); }
+        100% { opacity: .78; transform: translateY(0) scale(-1,1); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .floral-backdrop span { animation: none; }
+        body.is-unlocking .foreground-bloom { animation: none; }
+      }
+
+      .polaroid-wall { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
+      .polaroid {
+        position: absolute;
+        width: clamp(132px, 14vw, 180px);
+        margin: 0;
+        padding: 10px 10px 30px;
+        border: 1px solid rgba(248,238,228,.8);
+        background: rgba(242, 230, 219, .88);
+        box-shadow: 0 12px 30px rgba(62, 37, 55, .19);
+        opacity: .68;
+        transform: rotate(var(--tilt));
+        translate: 0 0;
+        animation: polaroid-float 8s ease-in-out var(--delay, 0s) infinite alternate;
+      }
+
+      .polaroid-photo {
+        position: relative;
+        display: grid;
+        aspect-ratio: 1;
+        place-items: center;
+        overflow: hidden;
+        background: linear-gradient(145deg, #cf858b, #b39b89);
+        color: rgba(103, 66, 83, .78);
+      }
+
+      .polaroid-photo span { font-size: 2rem; }
+      .polaroid-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .polaroid-photo.has-photo span { display: none; }
+      .polaroid:nth-child(2) .polaroid-photo { background: linear-gradient(145deg, #d6b77c, #c87982); }
+      .polaroid:nth-child(3) .polaroid-photo { background: linear-gradient(145deg, #a87e70, #cf958b); }
+      .polaroid:nth-child(4) .polaroid-photo { background: linear-gradient(145deg, #d7aaa0, #b39b89); }
+      .polaroid figcaption { padding-top: 7px; color: #58434d; font-family: "Playfair Display", serif; font-size: .78rem; font-style: italic; text-align: center; }
+
+      @keyframes polaroid-float {
+        from { translate: 0 0; }
+        to { translate: 0 -7px; }
+      }
+
+      .polaroid-one { top: 17%; left: 2vw; --tilt: -10deg; --delay: -.6s; }
+      .polaroid-two { top: 48%; right: 2vw; --tilt: 8deg; --delay: -2.4s; }
+      .polaroid-three { bottom: 8%; left: 4vw; --tilt: 7deg; --delay: -4.1s; }
+      .polaroid-four { top: 9%; right: 5vw; --tilt: -7deg; --delay: -1.5s; }
+
+      .unlock-heart {
+        position: fixed;
+        z-index: 31;
+        color: #e8cf9f;
+        font-size: 1.2rem;
+        line-height: 1;
+        pointer-events: none;
+        animation: unlock-heart-burst 1.35s cubic-bezier(.16,.7,.22,1) forwards;
+      }
+
+      @keyframes unlock-heart-burst {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(.15) rotate(0); }
+        18% { opacity: 1; }
+        100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.35) rotate(65deg); }
+      }
+
+      @keyframes orb-drift {
+        from { transform: translate3d(-12px, -18px, 0) scale(.92); }
+        to { transform: translate3d(38px, 24px, 0) scale(1.12); }
+      }
+
+      .love-spark {
+        position: fixed;
+        z-index: 20;
+        left: 0;
+        top: 0;
+        color: #a33d4b;
+        font-size: 1rem;
+        pointer-events: none;
+        animation: spark-rise 900ms ease-out forwards;
+      }
+
+      @keyframes spark-rise {
+        0% { opacity: 0; transform: translate(-50%, -40%) scale(.5) rotate(-12deg); }
+        20% { opacity: 1; }
+        100% { opacity: 0; transform: translate(-50%, -95px) scale(1.4) rotate(15deg); }
+      }
+
+      .date-gate {
+        position: fixed;
+        z-index: 30;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        overflow-y: auto;
+        padding:
+          max(20px, env(safe-area-inset-top, 0px))
+          max(18px, env(safe-area-inset-right, 0px))
+          max(20px, env(safe-area-inset-bottom, 0px))
+          max(18px, env(safe-area-inset-left, 0px));
+        background:
+          radial-gradient(ellipse at 15% 12%, rgba(166, 68, 80, .46), transparent 32rem),
+          radial-gradient(ellipse at 88% 78%, rgba(126, 91, 73, .4), transparent 34rem),
+          #321820;
+        transition: opacity .65s ease, visibility .65s ease;
+      }
+
+      .date-gate[hidden] { display: none; }
+      .date-gate.is-opening { opacity: 0; visibility: hidden; }
+      .date-gate.is-opening::after {
+        position: absolute;
+        inset: -20%;
+        background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,.48) 50%, transparent 60%);
+        content: "";
+        pointer-events: none;
+        animation: gate-sweep .65s ease-out both;
+      }
+
+      .gate-card {
+        position: relative;
+        width: min(100%, 480px);
+        padding: clamp(30px, 7vw, 58px);
+        border: 1px solid rgba(255,255,255,.75);
+        border-radius: 7px 28px 28px 28px;
+        background:
+          repeating-linear-gradient(to bottom, transparent 0, transparent 42px, rgba(142, 48, 65, .12) 43px),
+          #f1e2d7;
+        box-shadow: 0 30px 100px rgba(15, 10, 22, .35);
+        text-align: center;
+        animation: letter-arrive .8s cubic-bezier(.2,.8,.2,1) both;
+      }
+
+      .date-gate.is-opening .gate-card { animation: letter-open .65s cubic-bezier(.4,0,.2,1) both; transform-origin: center top; }
+
+      .gate-card::before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 34px;
+        height: 34px;
+        border-right: 1px solid rgba(153, 80, 106, .2);
+        border-bottom: 1px solid rgba(153, 80, 106, .2);
+        border-radius: 0 0 8px 0;
+        background: #efc9c0;
+        content: "";
+      }
+
+      @keyframes letter-arrive {
+        from { opacity: 0; transform: translateY(24px) rotateX(8deg) scale(.97); }
+        to { opacity: 1; transform: translateY(0) rotateX(0) scale(1); }
+      }
+
+      @keyframes letter-open {
+        0% { opacity: 1; transform: perspective(900px) rotateX(0) translateY(0) scale(1); }
+        38% { opacity: 1; transform: perspective(900px) rotateX(-8deg) translateY(-10px) scale(1.035); }
+        100% { opacity: 0; transform: perspective(900px) rotateX(13deg) translateY(-54px) scale(.86); }
+      }
+
+      @keyframes gate-sweep {
+        from { transform: translateX(-65%); opacity: 0; }
+        28% { opacity: 1; }
+        to { transform: translateX(65%); opacity: 0; }
+      }
+
+      .gate-stamp {
+        display: grid;
+        width: 62px;
+        height: 62px;
+        margin: 0 auto 18px;
+        place-items: center;
+        border: 1px solid rgba(153, 80, 106, .28);
+        border-radius: 50%;
+        background: #e9cdc5;
+        color: var(--rose);
+        font-size: 1.8rem;
+        animation: stamp-beat 2.4s ease-in-out infinite;
+      }
+
+      @keyframes stamp-beat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+      }
+
+      .gate-card .eyebrow { margin-bottom: 13px; }
+      .gate-card h1 { margin: 0 0 11px; font-size: clamp(2.2rem, 8vw, 3.2rem); letter-spacing: -.04em; line-height: 1.1; }
+      .gate-card > p { margin: 0 auto 21px; color: var(--muted); }
+      .gate-form { display: grid; gap: 12px; }
+      .gate-input {
+        width: 100%;
+        min-height: 52px;
+        padding: 0 16px;
+        border: 1px solid rgba(153, 80, 106, .35);
+        border-radius: 14px;
+        outline: none;
+        background: rgba(248,239,230,.78);
+        color: var(--ink);
+        text-align: center;
+        letter-spacing: .12em;
+        transition: border-color .2s ease, box-shadow .2s ease;
+      }
+      .gate-input:focus { border-color: var(--rose); box-shadow: 0 0 0 4px rgba(153, 80, 106, .14); }
+      .gate-form .button { width: 100%; }
+      .gate-hint { margin: 2px 0 0; color: #806b74; font-size: .79rem; }
+      .gate-error { min-height: 1.5em; margin: 0; color: #963f59; font-size: .86rem; font-weight: 600; }
+      .gate-form.is-shaking { animation: nudge .34s ease-in-out; }
+      @keyframes nudge { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+      .reveal { opacity: 1; transform: none; }
+      .motion-ready .reveal { transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+      .motion-ready .reveal.is-pending { opacity: 0; transform: translateY(22px); }
+      .motion-ready .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+      body.is-unlocking #site-content .topbar { animation: unlock-drop .8s cubic-bezier(.2,.7,.2,1) both; }
+      body.is-unlocking #site-content .hero { animation: unlock-hero 1.2s cubic-bezier(.2,.7,.2,1) .38s both; }
+      body.is-unlocking #site-content .hero-content > * { animation: unlock-copy .72s cubic-bezier(.2,.7,.2,1) both; }
+      body.is-unlocking #site-content .hero-content > :nth-child(1) { animation-delay: .78s; }
+      body.is-unlocking #site-content .hero-content > :nth-child(2) { animation-delay: 1.24s; }
+      body.is-unlocking #site-content .hero-content > :nth-child(3) { animation-delay: 1.7s; }
+      body.is-unlocking #site-content .hero-content > :nth-child(4) { animation-delay: 2.16s; }
+      body.is-unlocking #site-content .hero-content > :nth-child(5) { animation-delay: 2.62s; }
+      body.is-unlocking .polaroid { animation: polaroid-float 8s ease-in-out var(--delay, 0s) infinite alternate, polaroid-arrive .9s cubic-bezier(.2,.7,.2,1) var(--arrive-delay, 0s) both; }
+      body.is-unlocking .polaroid-one { --arrive-delay: .72s; }
+      body.is-unlocking .polaroid-two { --arrive-delay: 1.02s; }
+      body.is-unlocking .polaroid-three { --arrive-delay: 1.32s; }
+      body.is-unlocking .polaroid-four { --arrive-delay: 1.62s; }
+      body.is-unlocking #site-content #memories { animation: section-arrive 1s cubic-bezier(.2,.7,.2,1) 2.9s both; }
+      body.is-unlocking #site-content #letter { animation: section-arrive 1s cubic-bezier(.2,.7,.2,1) 3.8s both; }
+      body.is-unlocking #site-content #little-puzzle { animation: section-arrive 1s cubic-bezier(.2,.7,.2,1) 4.7s both; }
+      body.is-unlocking #site-content ~ .footer { animation: section-arrive 1s cubic-bezier(.2,.7,.2,1) 5.3s both; }
+
+      @keyframes unlock-drop {
+        from { opacity: 0; transform: translateY(-18px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes unlock-hero {
+        from { opacity: 0; transform: translateY(34px) scale(.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      @keyframes unlock-copy {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes section-arrive {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes polaroid-arrive {
+        from { opacity: 0; scale: .58; }
+        to { opacity: .68; scale: 1; }
+      }
+
+      a { color: inherit; text-decoration: none; }
+      button, input { font: inherit; }
+      button { color: inherit; }
+
+      .page-shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+      .page-shell, .section, .video-showcase, .video-feature, .puzzle-card, .letter { min-width: 0; }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 22px 0;
+      }
+
+      .wordmark {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-family: "Playfair Display", serif;
+        font-size: 1.15rem;
+        font-weight: 600;
+      }
+
+      .wordmark span { color: var(--rose); }
+
+      .nav-links { display: flex; flex-wrap: wrap; gap: 20px; color: var(--muted); font-size: .88rem; }
+      .nav-links a:hover { color: var(--rose); }
+
+      .hero {
+        position: relative;
+        display: grid;
+        min-height: min(590px, 82vh);
+        min-height: min(590px, 82svh);
+        place-items: center;
+        overflow: hidden;
+        padding: 70px 20px;
+        border: 1px solid rgba(248,238,228,.7);
+        border-radius: 34px;
+        background:
+          linear-gradient(120deg, rgba(217, 166, 151, .98), rgba(192, 121, 125, .96) 52%, rgba(168, 146, 123, .96)),
+          var(--pink);
+        box-shadow: var(--shadow);
+        text-align: center;
+      }
+
+      .hero::before, .hero::after {
+        position: absolute;
+        color: rgba(100, 40, 51, .38);
+        content: "♡";
+        font-family: "Playfair Display", serif;
+        pointer-events: none;
+      }
+
+      .hero::before { top: 44px; left: 8%; font-size: 5rem; transform: rotate(-15deg); }
+      .hero::after { right: 8%; bottom: 20px; font-size: 7rem; transform: rotate(12deg); }
+
+      .hero-content { position: relative; z-index: 1; max-width: 720px; }
+
+      .parcel-pup {
+        position: absolute;
+        z-index: 2;
+        bottom: 7px;
+        left: clamp(14px, 3vw, 38px);
+        width: clamp(100px, 12vw, 150px);
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        transition: transform .25s ease;
+      }
+
+      .parcel-pup:hover { transform: translateY(-2px) rotate(-1deg); }
+      .parcel-pup svg { display: block; width: 100%; overflow: visible; filter: drop-shadow(0 8px 8px rgba(72, 43, 61, .14)); }
+      .parcel-symbol { position: absolute; top: 56%; left: 68%; color: #583a49; font-size: .86rem; font-weight: 700; }
+      .find-clue.is-found .clue-icon { display: none; }
+      .find-clue .clue-symbol[hidden] { display: none; }
+      .find-clue.is-found .clue-symbol { display: inline-block; animation: clue-pop .35s ease-out both; }
+      @keyframes clue-pop { from { opacity: 0; transform: scale(.65) rotate(-8deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border: 1px solid rgba(163, 61, 75, .24);
+        border-radius: 999px;
+        background: rgba(255, 253, 250, .68);
+        color: #74343c;
+        font-size: .76rem;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+      }
+
+      h1, h2, h3, p { margin-top: 0; }
+      h1, h2, h3 { font-family: "Playfair Display", serif; font-weight: 500; }
+
+      h1 {
+        margin: 22px 0 14px;
+        font-size: clamp(3.2rem, 8vw, 6.4rem);
+        letter-spacing: -.055em;
+        line-height: .99;
+      }
+
+      h1 em { color: #8e3041; font-weight: 500; }
+      .hero-copy { max-width: 490px; margin: 0 auto 28px; color: var(--muted); font-size: 1.06rem; }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 48px;
+        padding: 0 21px;
+        border: 0;
+        border-radius: 999px;
+        background: #8e3041;
+        box-shadow: 0 9px 22px rgba(117, 53, 78, .3);
+        color: white;
+        cursor: pointer;
+        font-size: .9rem;
+        font-weight: 700;
+        transition: transform .2s ease, box-shadow .2s ease;
+      }
+
+      .button:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(117, 53, 78, .38); }
+
+      .tiny-note { margin: 17px 0 0; color: #765e62; font-size: .78rem; }
+
+      .section { padding: 94px 0 0; }
+
+      .section-heading { margin-bottom: 30px; text-align: center; }
+      .section-heading .eyebrow { margin-bottom: 15px; }
+      .section-heading h2 { margin-bottom: 8px; font-size: clamp(2.2rem, 5vw, 3.2rem); letter-spacing: -.035em; }
+      .section-heading p { margin-bottom: 0; color: var(--muted); }
+
+      .photo-slot {
+        position: relative;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        background: linear-gradient(145deg, #cf858b, #b39b89);
+        color: #644452;
+        text-align: center;
+      }
+
+      .photo-slot img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+
+      .video-showcase {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 390px) minmax(0, 1fr);
+        grid-template-rows: repeat(3, minmax(0, auto));
+        align-items: center;
+        gap: clamp(14px, 2vw, 24px);
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+      .video-feature { overflow: hidden; border: 1px solid rgba(248,238,228,.82); border-radius: 30px; background: var(--paper); box-shadow: var(--shadow); }
+      .video-feature { grid-column: 2; grid-row: 1 / 4; align-self: center; }
+      .video-slot { position: relative; display: grid; width: min(100%, 390px); aspect-ratio: 9 / 16; height: auto; min-height: 0; margin: 0 auto; place-items: center; overflow: hidden; border-radius: 18px; background: #160e12; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+      .video-slot video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #160e12; }
+      .video-feature-meta { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 24px clamp(24px, 5vw, 46px) 28px; }
+      .video-feature-meta .eyebrow { margin-bottom: 10px; }
+      .video-feature-meta h3 { margin-bottom: 5px; font-size: clamp(1.8rem, 4vw, 2.5rem); }
+      .video-feature-meta p { margin-bottom: 0; color: var(--muted); }
+      .feature-heart { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; min-width: 46px; min-height: 46px; padding: 6px; border: 0; background: transparent; color: var(--rose); font-size: 2rem; cursor: pointer; }
+      .feature-heart:hover { transform: scale(1.12); }
+      .feature-heart .clue-icon { display: inline-block; transition: transform .2s ease; }
+      .feature-heart:hover .clue-icon { transform: scale(1.1); }
+
+      .photo-strip { display: contents; }
+      .mini-memory { min-width: 0; align-self: center; padding: 10px 10px 14px; border: 1px solid rgba(248,238,228,.86); background: rgba(242,230,219,.97); box-shadow: 0 12px 30px rgba(59,30,39,.2); transform: rotate(var(--tilt, 0deg)); transition: transform .22s ease, box-shadow .22s ease; }
+      .mini-memory:hover { z-index: 1; box-shadow: var(--shadow); transform: translateY(-5px) rotate(0); }
+      .mini-memory .photo-slot { aspect-ratio: 1 / 1.08; }
+      .mini-memory:nth-child(1) { grid-column: 1; grid-row: 1; }
+      .mini-memory:nth-child(2) .photo-slot { background: linear-gradient(145deg, #d6b77c, #c87982); }
+      .mini-memory:nth-child(2) { grid-column: 3; grid-row: 1; }
+      .mini-memory:nth-child(3) .photo-slot { background: linear-gradient(145deg, #a87e70, #cf958b); }
+      .mini-memory:nth-child(3) { grid-column: 1; grid-row: 2; }
+      .mini-memory:nth-child(4) .photo-slot { background: linear-gradient(145deg, #cf858b, #b39b89); }
+      .mini-memory:nth-child(4) { grid-column: 3; grid-row: 2; }
+      .mini-memory:nth-child(5) .photo-slot { background: linear-gradient(145deg, #d6b77c, #b39b89); }
+      .mini-memory:nth-child(5) { grid-column: 1; grid-row: 3; }
+      .mini-memory:nth-child(6) { grid-column: 3; grid-row: 3; }
+      .mini-caption { margin: 7px 0 0; color: #58434d; font-family: "Playfair Display", serif; font-size: .86rem; font-style: italic; text-align: center; }
+
+      .flip-memory { width: 100%; color: var(--ink); font: inherit; text-align: center; cursor: pointer; }
+      .flip-inner { position: relative; display: block; aspect-ratio: 1.08; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.7,.2,1); }
+      .flip-memory.is-found .flip-inner { transform: rotateY(180deg); }
+      .flip-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 9px; backface-visibility: hidden; }
+      .flip-front { overflow: hidden; background: linear-gradient(145deg, #cf858b, #b39b89); color: #fff8f1; text-shadow: 0 2px 8px rgba(46,24,29,.7); }
+      .flip-front .memory-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .flip-front::after { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(46,24,29,.06), rgba(46,24,29,.58)); content: ""; }
+      .flip-front .clue-icon, .flip-front small { position: relative; z-index: 1; }
+      .flip-front .clue-icon { font-size: 1.8rem; }
+      .flip-front small, .flip-back small { font-size: .64rem; }
+      .flip-back { transform: rotateY(180deg); background: linear-gradient(145deg, #d6b77c, #c87982); color: #432b35; font-family: "Playfair Display", serif; }
+
+      .puzzle-card {
+        position: relative;
+        max-width: 820px;
+        margin: 0 auto;
+        padding: clamp(26px, 5vw, 48px);
+        border: 1px solid rgba(153,80,106,.2);
+        border-radius: 7px 24px 7px 24px;
+        background:
+          repeating-linear-gradient(to bottom, transparent 0, transparent 39px, rgba(185,108,131,.08) 40px),
+          #f1e2d7;
+        box-shadow: var(--shadow);
+      }
+      .puzzle-card::before {
+        position: absolute;
+        top: 17px;
+        right: 19px;
+        display: grid;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        border: 1px dashed rgba(153,80,106,.45);
+        color: #b96c83;
+        content: "♡";
+        font-size: 1.5rem;
+        transform: rotate(8deg);
+      }
+      .puzzle-intro { max-width: 540px; margin: 0 auto 26px; color: #57404a; text-align: center; }
+      .riddle-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 24px; padding: 0; list-style: none; }
+      .riddle-card { display: flex; align-items: flex-start; gap: 12px; min-height: 82px; padding: 16px; border: 1px dashed rgba(153,80,106,.28); border-radius: 6px 15px 6px 15px; background: rgba(221,196,190,.46); }
+      .riddle-card p { margin: 0; color: #57404a; font-family: "Playfair Display", serif; font-size: .98rem; font-style: italic; line-height: 1.55; }
+      .riddle-mark { flex: 0 0 auto; color: #b96c83; font-size: 1rem; }
+      .clue-progress { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px dashed rgba(153,80,106,.28); color: #604654; font-size: .88rem; font-weight: 700; }
+      .phrase-pieces { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+      .phrase-piece { display: grid; width: 48px; height: 48px; flex: 0 0 auto; place-items: center; overflow: hidden; border: 1px dashed rgba(153,80,106,.35); border-radius: 5px 13px 5px 13px; background: rgba(247,233,233,.55); color: #b96c83; transform: rotate(-2deg); }
+      .phrase-piece:nth-child(even) { transform: rotate(2deg); }
+      .box-heart { display: inline-block; opacity: .28; font-size: 1.15rem; }
+      .phrase-piece.is-filled { border-style: solid; background: #f7e9e9; }
+      .phrase-piece.is-filled .box-heart { opacity: 1; animation: heart-drop .68s cubic-bezier(.2,.8,.2,1) both; }
+      @keyframes heart-drop { 0% { opacity: 0; transform: translateY(-28px) scale(.55); } 58% { opacity: 1; transform: translateY(3px) scale(1.16); } 78% { transform: translateY(-2px) scale(.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+      .phrase-piece.is-receiving { animation: box-ripple .55s ease-out; }
+      @keyframes box-ripple { 0% { box-shadow: 0 0 0 0 rgba(185,108,131,.32); } 100% { box-shadow: 0 0 0 11px rgba(185,108,131,0); } }
+      .puzzle-card.is-building { animation: puzzle-build 1.1s ease-in-out both; }
+      .puzzle-card.is-building::before { animation: stamp-charge 1.1s cubic-bezier(.2,.8,.2,1) both; }
+      .puzzle-card.is-building .phrase-piece.is-filled { animation: box-charge .62s ease-out both; }
+      .puzzle-card.is-building .phrase-piece:nth-child(2) { animation-delay: .12s; }
+      .puzzle-card.is-building .phrase-piece:nth-child(3) { animation-delay: .24s; }
+      .puzzle-card.is-building .phrase-piece:nth-child(4) { animation-delay: .36s; }
+      .puzzle-card.is-building .phrase-piece.is-filled .box-heart { animation: heart-charge .62s cubic-bezier(.2,.8,.2,1) both; }
+      .puzzle-card.is-building .phrase-piece:nth-child(2) .box-heart { animation-delay: .12s; }
+      .puzzle-card.is-building .phrase-piece:nth-child(3) .box-heart { animation-delay: .24s; }
+      .puzzle-card.is-building .phrase-piece:nth-child(4) .box-heart { animation-delay: .36s; }
+      @keyframes puzzle-build {
+        0%, 100% { transform: scale(1) rotate(0); }
+        16% { transform: scale(.985) rotate(-.35deg); }
+        34% { transform: scale(1.025) rotate(.35deg); }
+        52% { transform: scale(.99) rotate(-.2deg); }
+        74% { transform: scale(1.035) rotate(.25deg); }
+        90% { transform: scale(.995) rotate(0); }
+      }
+      @keyframes stamp-charge {
+        0%, 100% { transform: rotate(8deg) scale(1); }
+        24% { transform: rotate(-15deg) scale(1.35); }
+        50% { transform: rotate(13deg) scale(.86); }
+        78% { transform: rotate(-9deg) scale(1.5); }
+      }
+      @keyframes box-charge {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(185,108,131,0); }
+        45% { box-shadow: 0 0 0 10px rgba(185,108,131,.22); }
+      }
+      @keyframes heart-charge {
+        0%, 100% { transform: translateY(0) scale(1); }
+        40% { transform: translateY(-9px) scale(1.3) rotate(-10deg); }
+        70% { transform: translateY(2px) scale(.9) rotate(7deg); }
+      }
+      .reveal-tease { margin: 4px 0 18px; color: #99506a; font-family: "Playfair Display", serif; font-style: italic; text-align: center; animation: tease-pulse .42s ease-in-out infinite alternate; }
+      @keyframes tease-pulse { from { opacity: .5; transform: scale(.98); } to { opacity: 1; transform: scale(1.04); } }
+      .heart-flight, .puzzle-burst-particle { position: fixed; z-index: 10000; pointer-events: none; color: var(--rose); text-shadow: 0 4px 16px rgba(89,52,71,.2); }
+      .heart-flight { font-size: 30px; will-change: top, left, transform, opacity; }
+      .puzzle-burst-particle { font-size: clamp(17px, 3.2vw, 30px); animation: heart-burst 1.2s cubic-bezier(.15,.7,.25,1) both; }
+      .proposal-particle { position: fixed; z-index: 10000; pointer-events: none; color: #d3b77b; animation: proposal-glint 1.3s ease-out both; }
+      .yes-particle { position: fixed; z-index: 10002; left: 0; top: 0; pointer-events: none; animation: yes-particle-burst var(--duration) cubic-bezier(.14,.72,.24,1) var(--delay, 0s) both; will-change: transform, opacity; }
+      @keyframes proposal-glint {
+        from { opacity: 0; transform: translate(-50%, -50%) scale(.6); }
+        25% { opacity: .8; }
+        to { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2); }
+      }
+      @keyframes yes-particle-burst {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(.08) rotate(0); }
+        14% { opacity: 1; transform: translate(-50%, -50%) scale(1.35) rotate(18deg); }
+        100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--scale)) rotate(var(--turn)); }
+      }
+      .yes-celebration {
+        position: fixed;
+        z-index: 10001;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        padding:
+          max(24px, env(safe-area-inset-top, 0px))
+          max(24px, env(safe-area-inset-right, 0px))
+          max(24px, env(safe-area-inset-bottom, 0px))
+          max(24px, env(safe-area-inset-left, 0px));
+        background: radial-gradient(circle at center, rgba(163,61,75,.93), rgba(54,13,28,.97) 70%);
+        color: #fff8f1;
+        pointer-events: none;
+        backdrop-filter: blur(8px);
+      }
+      .yes-celebration[hidden], .sad-screen[hidden] { display: none; }
+      .yes-celebration.is-active { animation: yes-scene-in 1.1s cubic-bezier(.16,.78,.2,1) both; }
+      .yes-celebration.is-fading { animation: yes-scene-out 3.8s cubic-bezier(.2,.65,.25,1) both; }
+      .yes-celebration-inner { position: relative; z-index: 1; max-width: 760px; text-align: center; animation: yes-message-arrive 1.25s cubic-bezier(.16,.78,.2,1) .18s both; }
+      .yes-celebration-inner::before {
+        position: absolute;
+        z-index: -1;
+        top: 50%;
+        left: 50%;
+        width: min(72vw, 520px);
+        aspect-ratio: 1;
+        border: 1px solid rgba(255,248,241,.48);
+        border-radius: 50%;
+        box-shadow: 0 0 0 20px rgba(255,248,241,.07), 0 0 0 44px rgba(255,248,241,.045);
+        content: "";
+        animation: yes-ring-pulse 2.4s ease-out infinite;
+        transform: translate(-50%, -50%);
+      }
+      .yes-celebration-bloom { display: block; font-size: clamp(7rem, 24vw, 15rem); line-height: 1; filter: drop-shadow(0 12px 36px rgba(28,8,18,.38)); animation: yes-bloom-beat 1.25s ease-in-out infinite; }
+      .yes-celebration h2 { margin: 14px 0 8px; color: #fff8f1; font-size: clamp(3.5rem, 13vw, 8rem); letter-spacing: .04em; line-height: .95; text-shadow: 0 8px 34px rgba(28,8,18,.38); }
+      .yes-celebration p { margin: 0; color: #ffe8d9; font-family: "Playfair Display", serif; font-size: clamp(1.2rem, 3.8vw, 2rem); font-style: italic; }
+      .sad-screen {
+        position: fixed;
+        z-index: 10003;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        padding:
+          max(24px, env(safe-area-inset-top, 0px))
+          max(24px, env(safe-area-inset-right, 0px))
+          max(24px, env(safe-area-inset-bottom, 0px))
+          max(24px, env(safe-area-inset-left, 0px));
+        background: rgba(37,15,23,.91);
+        color: #fff8f1;
+        pointer-events: auto;
+        backdrop-filter: blur(8px);
+      }
+      .sad-screen.is-showing { animation: sad-screen-in .45s cubic-bezier(.16,.78,.2,1) both; }
+      .sad-screen.is-leaving { animation: sad-screen-out .65s ease-in both; }
+      .sad-screen-inner { text-align: center; }
+      .sad-face { display: block; font-size: clamp(11rem, 42vw, 25rem); line-height: .95; filter: drop-shadow(0 12px 44px rgba(228,144,153,.28)); animation: sad-face-arrive .7s cubic-bezier(.16,.78,.2,1) both; }
+      .sad-message { margin: 16px 0 0; color: #f7ded6; font-family: "Playfair Display", serif; font-size: clamp(1.3rem, 4vw, 2.2rem); font-style: italic; }
+      @keyframes yes-scene-in { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes yes-scene-out { from { opacity: 1; } to { opacity: 0; } }
+      @keyframes yes-message-arrive { from { opacity: 0; transform: translateY(42px) scale(.76); filter: blur(12px); } 68% { opacity: 1; transform: translateY(-7px) scale(1.04); filter: blur(0); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      @keyframes yes-ring-pulse { 0% { opacity: .9; transform: translate(-50%,-50%) scale(.5); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.5); } }
+      @keyframes yes-bloom-beat { 0%, 100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.13) rotate(4deg); } }
+      @keyframes sad-screen-in { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes sad-screen-out { from { opacity: 1; } to { opacity: 0; } }
+      @keyframes sad-face-arrive { 0% { opacity: 0; transform: scale(.2) rotate(-22deg); } 68% { opacity: 1; transform: scale(1.14) rotate(5deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+      @keyframes heart-burst {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(.15); }
+        18% { opacity: 1; transform: translate(-50%, -50%) scale(1.45) rotate(20deg); }
+        100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3) rotate(var(--turn)); }
+      }
+      .response-panel { display: grid; gap: 18px; }
+      .response-panel[hidden] { display: none; }
+      .question-postcard { padding: clamp(22px, 5vw, 34px); border: 1px dashed rgba(153,80,106,.4); border-radius: 5px 18px 5px 18px; background: rgba(247,233,233,.68); text-align: center; }
+      .question-postcard .eyebrow { color: #996078; }
+      .question-postcard h3 { margin: 8px 0; color: #714859; font-family: "Playfair Display", serif; font-size: clamp(1.8rem, 5vw, 2.7rem); }
+      .question-postcard p { margin: 0; color: #705562; }
+      .answer-response { margin: 0; color: #654354; font-weight: 600; text-align: center; }
+      .answer-response.is-visible { animation: response-arrive .4s ease both; }
+      .proposal-response-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; width: min(100%, 720px); margin: 0 auto; }
+      .proposal-answer { width: 100%; min-height: 54px; padding: 0 17px; border: 1px solid rgba(112,49,62,.32); border-radius: 3px; outline: none; background: rgba(242,230,219,.94); color: #392a35; font: inherit; }
+      .proposal-answer:focus { border-color: #d3b77b; box-shadow: 0 0 0 3px rgba(211,183,123,.2); }
+      .proposal-submit { min-height: 54px; border-radius: 3px; }
+      @keyframes response-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      .local-note { margin: 0; color: #806b74; font-size: .78rem; text-align: center; }
+
+      body.is-proposal {
+        --ink: #f6eee5;
+        --muted: #e0c2b9;
+        --rose: #d3b77b;
+        background: #250f17;
+        color: var(--ink);
+      }
+
+      body.is-proposal .ambient-orbs,
+      body.is-proposal .polaroid-wall { opacity: 0; transition: opacity .8s ease; }
+
+      body.is-proposal #little-puzzle {
+        position: fixed;
+        z-index: 40;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-y: auto;
+        padding:
+          max(72px, calc(10vh + env(safe-area-inset-top, 0px)))
+          max(24px, env(safe-area-inset-right, 0px))
+          max(48px, env(safe-area-inset-bottom, 0px))
+          max(24px, env(safe-area-inset-left, 0px));
+        background:
+          radial-gradient(ellipse at 50% 40%, rgba(159, 57, 72, .38), transparent 58%),
+          linear-gradient(145deg, #4a1823, #210d16 72%);
+        animation: proposal-scene-in 1.1s cubic-bezier(.2,.7,.2,1) both;
+      }
+
+      body.is-proposal #little-puzzle > .section-heading,
+      body.is-proposal .puzzle-intro,
+      body.is-proposal .riddle-list,
+      body.is-proposal .clue-progress,
+      body.is-proposal .reveal-tease { display: none; }
+
+      body.is-proposal .puzzle-card {
+        width: min(100%, 1040px);
+        max-width: 1040px;
+        margin: auto;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      body.is-proposal .puzzle-card::before { display: none; }
+      body.is-proposal .response-panel { gap: clamp(24px, 5vh, 44px); }
+      body.is-proposal .question-postcard {
+        position: relative;
+        padding: clamp(30px, 7vh, 68px) 20px;
+        border: 0;
+        border-block: 1px solid rgba(211, 183, 123, .42);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        animation: proposal-message-in 1.2s cubic-bezier(.2,.7,.2,1) both;
+      }
+
+      body.is-proposal .question-postcard::before,
+      body.is-proposal .question-postcard::after {
+        position: absolute;
+        left: 50%;
+        width: 52px;
+        height: 1px;
+        background: #d3b77b;
+        content: "";
+        transform: translateX(-50%);
+      }
+      body.is-proposal .question-postcard::before { top: -1px; }
+      body.is-proposal .question-postcard::after { bottom: -1px; }
+      body.is-proposal .question-postcard .eyebrow {
+        border: 0;
+        background: transparent;
+        color: #d3b77b;
+        letter-spacing: .24em;
+      }
+      body.is-proposal .question-postcard h3 {
+        margin: 18px 0;
+        color: #f4f0e5;
+        font-size: clamp(3.2rem, 10vw, 8rem);
+        letter-spacing: -.055em;
+        line-height: .98;
+      }
+      body.is-proposal .question-postcard h3::selection { background: rgba(211,183,123,.34); color: #f4f0e5; }
+      body.is-proposal .question-postcard p {
+        color: #c2c7bd;
+        font-size: clamp(1rem, 2vw, 1.2rem);
+      }
+      body.is-proposal .proposal-answer {
+        border-color: rgba(211,183,123,.42);
+        background: rgba(255,255,255,.035);
+        color: #f3efe3;
+      }
+      body.is-proposal .proposal-answer::placeholder { color: #d4b8aa; }
+      body.is-proposal .proposal-answer:focus {
+        border-color: #d3b77b;
+        box-shadow: 0 0 0 3px rgba(211,183,123,.18);
+      }
+      body.is-proposal .proposal-submit {
+        background: #d3b77b;
+        box-shadow: none;
+        color: #35151c;
+      }
+      body.is-proposal .proposal-submit:hover { box-shadow: 0 8px 26px rgba(0,0,0,.2); }
+      body.is-proposal .answer-response { color: #e5dfce; }
+      body.is-proposal .local-note { color: #c5a6a0; }
+      body.is-proposal .proposal-close[hidden] { display: none; }
+      body.is-proposal .proposal-close {
+        position: fixed;
+        z-index: 2;
+        top: 24px;
+        right: 28px;
+        padding: 10px 14px;
+        border: 1px solid rgba(211,183,123,.4);
+        border-radius: 2px;
+        background: rgba(49,16,27,.82);
+        color: #e7e6dc;
+        cursor: pointer;
+        font-size: .82rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      body.is-proposal .proposal-close:hover { border-color: #d3b77b; }
+
+      @keyframes proposal-scene-in {
+        from { opacity: 0; transform: scale(1.06); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      @keyframes proposal-message-in {
+        from { opacity: 0; filter: blur(12px); transform: translateY(36px) scale(.96); }
+        to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
+      }
+      body.is-homecoming #site-content { animation: homepage-return 3.6s cubic-bezier(.16,.72,.2,1) both; }
+      @keyframes homepage-return {
+        from { opacity: .12; filter: blur(9px); transform: translateY(25px) scale(.99); }
+        to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
+      }
+
+      .letter-wrap { max-width: 800px; margin: 0 auto; }
+      .letter-actions { display: flex; justify-content: center; margin-bottom: 18px; }
+      .letter-trigger[disabled] { cursor: wait; opacity: .8; }
+      .letter-seal { display: grid; width: 58px; height: 58px; margin: 8px auto 16px; place-items: center; border: 1px solid rgba(153, 80, 106, .28); border-radius: 50%; background: #f0d9de; color: var(--rose); font-size: 1.7rem; }
+      .letter-seal[hidden], .letter-prompt[hidden] { display: none; }
+      .letter-prompt { max-width: 430px; margin: 8px auto 0; color: var(--muted); font-family: "Playfair Display", serif; font-size: 1.15rem; font-style: italic; text-align: center; }
+      .letter {
+        position: relative;
+        padding: clamp(28px, 7vw, 68px);
+        border: 1px solid rgba(185, 108, 131, .22);
+        border-radius: 6px 26px 26px 26px;
+        background:
+          repeating-linear-gradient(to bottom, transparent 0, transparent 41px, rgba(185, 108, 131, .14) 42px),
+          #f1e2d7;
+        box-shadow: var(--shadow);
+      }
+
+      .letter::before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 32px;
+        height: 32px;
+        border-right: 1px solid rgba(185, 108, 131, .24);
+        border-bottom: 1px solid rgba(185, 108, 131, .24);
+        border-radius: 0 0 8px 0;
+        background: #f1d8dd;
+        content: "";
+      }
+
+      .letter .eyebrow { margin-bottom: 22px; }
+      .letter h3 { margin-bottom: 15px; font-size: 2rem; }
+      .letter p { max-width: 620px; color: #58464f; }
+      .letter .signoff { margin: 23px 0 0; color: #85435b; font-family: "Playfair Display", serif; font-size: 1.35rem; font-style: italic; }
+      .letter.is-unfolding { animation: letter-reveal .6s ease-out both; }
+      .letter.is-writing [data-write] { animation: letter-copy-in .55s ease both; }
+      .letter.is-writing [data-write]:nth-child(5) { animation-delay: .08s; }
+      .letter.is-writing [data-write]:nth-child(6) { animation-delay: .16s; }
+      .letter.is-writing [data-write]:nth-child(7) { animation-delay: .24s; }
+      .typing-cursor {
+        display: inline-block;
+        width: .08em;
+        height: 1em;
+        margin-left: .08em;
+        vertical-align: -.12em;
+        background: var(--rose);
+        animation: typing-cursor-blink .72s steps(2, start) infinite;
+      }
+      .letter.is-signoff-emphasized .signoff {
+        position: relative;
+        display: block;
+        width: fit-content;
+        max-width: 100%;
+        margin: 30px auto 0;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: radial-gradient(ellipse, rgba(142,48,65,.2), rgba(142,48,65,0) 72%);
+        color: #782539;
+        font-size: clamp(1.3rem, 4vw, 1.8rem);
+        text-align: center;
+        animation: signoff-emphasize 1.65s cubic-bezier(.16,.78,.2,1) both;
+      }
+      .letter.is-signoff-emphasized .signoff-flourish {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 1;
+        pointer-events: none;
+        font-size: clamp(1.2rem, 5vw, 2rem);
+        opacity: 0;
+      }
+      .letter.is-signoff-emphasized .signoff-flourish--heart {
+        animation: signoff-heart-burst 1.65s cubic-bezier(.16,.78,.2,1) both;
+      }
+      .letter.is-signoff-emphasized .signoff-flourish--spark {
+        animation: signoff-spark-burst 1.65s cubic-bezier(.16,.78,.2,1) both;
+      }
+      .letter.is-unfolding .letter-seal { animation: seal-fade .35s ease-out both; }
+      .letter.is-unfolding .letter-prompt { animation: prompt-fade .35s ease-out both; }
+
+      @keyframes typing-cursor-blink { 50% { opacity: 0; } }
+      @keyframes letter-reveal {
+        from { opacity: .65; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes letter-copy-in {
+        from { opacity: 0; transform: translateY(7px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes signoff-emphasize {
+        0% { opacity: 0; filter: blur(9px); transform: translateY(24px) scale(.38) rotate(-8deg); }
+        42% { opacity: 1; filter: blur(0); transform: translateY(-4px) scale(1.22) rotate(3deg); }
+        62% { transform: translateY(2px) scale(.92) rotate(-2deg); }
+        82% { transform: translateY(-1px) scale(1.1) rotate(1deg); }
+        100% { opacity: 1; filter: none; transform: translateY(0) scale(1) rotate(0); }
+      }
+      @keyframes signoff-heart-burst {
+        0%, 12% { opacity: 0; transform: translate(-50%, -50%) scale(.2); }
+        38% { opacity: 1; transform: translate(calc(-50% - 72px), calc(-50% - 34px)) scale(1.35) rotate(-18deg); }
+        100% { opacity: 0; transform: translate(calc(-50% - 104px), calc(-50% - 60px)) scale(.5) rotate(-35deg); }
+      }
+      @keyframes signoff-spark-burst {
+        0%, 12% { opacity: 0; transform: translate(-50%, -50%) scale(.2); }
+        38% { opacity: 1; transform: translate(calc(-50% + 74px), calc(-50% - 40px)) scale(1.35) rotate(16deg); }
+        100% { opacity: 0; transform: translate(calc(-50% + 108px), calc(-50% - 72px)) scale(.5) rotate(32deg); }
+      }
+      @keyframes seal-fade { to { opacity: 0; transform: scale(.9); } }
+      @keyframes prompt-fade { to { opacity: 0; transform: translateY(-4px); } }
+
+      .footer { padding: 80px 0 35px; color: #806b74; text-align: center; font-size: .82rem; }
+      .footer-heart { display: inline-flex; align-items: center; padding: 0 2px; border: 0; background: transparent; color: var(--rose); cursor: pointer; font-size: 1rem; transition: transform .2s ease; }
+      .footer-heart:hover { transform: scale(1.25); }
+      .footer-heart.is-found { color: #85435b; }
+      .footer p { margin: 5px 0; }
+
+      .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+      @media (max-width: 760px) {
+        .page-shell { width: min(100% - 28px, 560px); }
+        .topbar { flex-wrap: wrap; gap: 8px; padding: 14px 0; }
+        .nav-links { gap: 12px; margin-left: auto; }
+        .nav-links a { padding-block: 6px; }
+        .polaroid { width: 82px; padding: 4px 4px 17px; opacity: .48; }
+        .polaroid-one { top: 14%; left: -35px; }
+        .polaroid-two { top: 62%; right: -35px; }
+        .polaroid-three { bottom: 18%; left: -37px; }
+        .polaroid-four { display: none; }
+        .polaroid figcaption { padding-top: 4px; font-size: .58rem; }
+        .nav-links { gap: 10px; font-size: .78rem; }
+        .hero { min-height: min(510px, 82vh); min-height: min(510px, 82svh); border-radius: 25px; }
+        .hero::before { left: 4%; font-size: 3.5rem; }
+        .hero::after { right: 3%; font-size: 5rem; }
+        .section { padding-top: 72px; }
+        .video-showcase { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .video-feature { grid-column: 1 / -1; grid-row: 1; justify-self: center; width: min(100%, 520px); }
+        .video-feature-meta { padding: 20px; }
+        .mini-memory:nth-child(1) { grid-column: 1; grid-row: 2; }
+        .mini-memory:nth-child(2) { grid-column: 2; grid-row: 2; }
+        .mini-memory:nth-child(3) { grid-column: 1; grid-row: 3; }
+        .mini-memory:nth-child(4) { grid-column: 2; grid-row: 3; }
+        .mini-memory:nth-child(5) { grid-column: 1; grid-row: 4; }
+        .mini-memory:nth-child(6) { grid-column: 2; grid-row: 4; }
+        .clue-progress { align-items: flex-start; flex-direction: column; }
+        .phrase-pieces { justify-content: flex-start; }
+        .riddle-list { grid-template-columns: 1fr; }
+        .proposal-response-form { grid-template-columns: 1fr; }
+        body.is-proposal #little-puzzle {
+          align-items: flex-start;
+          padding:
+            max(76px, calc(56px + env(safe-area-inset-top, 0px)))
+            max(20px, env(safe-area-inset-right, 0px))
+            max(34px, env(safe-area-inset-bottom, 0px))
+            max(20px, env(safe-area-inset-left, 0px));
+        }
+        body.is-proposal .proposal-submit { width: 100%; }
+        body.is-proposal .question-postcard { padding-inline: 8px; }
+        body.is-proposal .proposal-close {
+          top: max(14px, env(safe-area-inset-top, 0px));
+          right: max(14px, env(safe-area-inset-right, 0px));
+        }
+        .puzzle-card::before { top: 12px; right: 12px; width: 38px; height: 38px; }
+        .parcel-pup { bottom: 0; left: 5px; width: 92px; }
+        .parcel-symbol { top: 57%; left: 67%; font-size: .62rem; }
+        .footer { padding-top: 62px; }
+      }
+
+      @media (max-width: 420px) {
+        .page-shell { width: calc(100% - 24px); }
+        .nav-links { gap: 7px; }
+        .nav-links a { font-size: .72rem; }
+        .wordmark { font-size: 1rem; }
+        .hero-copy { font-size: .96rem; }
+        .hero::before { left: 2%; font-size: 2.8rem; }
+        .hero::after { right: 2%; font-size: 4rem; }
+        .video-showcase { gap: 8px; }
+        .video-feature-meta { gap: 10px; padding: 14px; }
+        .video-feature-meta h3 { font-size: clamp(1.35rem, 6vw, 1.8rem); }
+        .mini-memory { padding: 6px 6px 10px; }
+        .mini-caption { font-size: .74rem; }
+        .parcel-pup { width: 80px; }
+      }
+
+      @media (max-width: 340px) {
+        .page-shell { width: calc(100% - 20px); }
+        .topbar { gap: 5px; }
+        .wordmark { gap: 5px; font-size: .92rem; }
+        .nav-links { gap: 5px; font-size: .68rem; }
+        .nav-links a { font-size: .68rem; }
+        .hero { padding-inline: 12px; }
+        .hero h1 { font-size: clamp(2.45rem, 12vw, 3.2rem); }
+        .riddle-card { padding: 12px; }
+      }
+
+      @media (max-height: 520px) and (orientation: landscape) {
+        .hero { min-height: min(460px, 100vh); min-height: min(460px, 100svh); }
+        .gate-card { padding-block: 24px; }
+        .gate-stamp { width: 48px; height: 48px; margin-bottom: 10px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; animation-delay: 0s !important; animation-duration: .01ms !important; transition-delay: 0s !important; transition-duration: .01ms !important; }
+        .motion-ready .reveal.is-pending { opacity: 1; transform: none; }
+      }
+    </style>
+  </head>
+  <body class="is-locked">
+    <div class="ambient-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="floral-backdrop" aria-hidden="true"><span>✿</span><span>❀</span><span>✿</span><span>❀</span></div>
+    <div class="floral-foreground" aria-hidden="true">
+      <svg class="foreground-bloom" viewBox="0 0 180 230" focusable="false">
+        <path d="M75 230C74 183 94 137 120 94 135 69 143 45 144 20" fill="none" stroke="#71806a" stroke-width="5" stroke-linecap="round"/>
+        <path d="M91 166c-30-28-52-22-48-7 6 19 29 21 48 7Zm20-40c30-29 49-20 42-5-8 17-28 17-42 5Zm20-38c-26-26-44-20-39-5 6 15 23 18 39 5Z" fill="#849273"/>
+        <g transform="translate(144 35)" fill="#b84955">
+          <ellipse cy="-13" rx="7" ry="13"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(60)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(120)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(180)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(240)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(300)"/>
+          <circle r="5" fill="#e8cf9f"/>
+        </g>
+        <g transform="translate(119 104) scale(.72)" fill="#d1847a">
+          <ellipse cy="-13" rx="7" ry="13"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(60)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(120)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(180)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(240)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(300)"/>
+          <circle r="5" fill="#e8cf9f"/>
+        </g>
+      </svg>
+      <svg class="foreground-bloom foreground-bloom--right" viewBox="0 0 180 230" focusable="false">
+        <path d="M75 230C74 183 94 137 120 94 135 69 143 45 144 20" fill="none" stroke="#71806a" stroke-width="5" stroke-linecap="round"/>
+        <path d="M91 166c-30-28-52-22-48-7 6 19 29 21 48 7Zm20-40c30-29 49-20 42-5-8 17-28 17-42 5Zm20-38c-26-26-44-20-39-5 6 15 23 18 39 5Z" fill="#849273"/>
+        <g transform="translate(144 35)" fill="#b84955">
+          <ellipse cy="-13" rx="7" ry="13"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(60)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(120)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(180)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(240)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(300)"/>
+          <circle r="5" fill="#e8cf9f"/>
+        </g>
+        <g transform="translate(119 104) scale(.72)" fill="#d1847a">
+          <ellipse cy="-13" rx="7" ry="13"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(60)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(120)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(180)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(240)"/><ellipse cy="-13" rx="7" ry="13" transform="rotate(300)"/>
+          <circle r="5" fill="#e8cf9f"/>
+        </g>
+      </svg>
+    </div>
+    <aside class="polaroid-wall" aria-hidden="true">
+      <figure class="polaroid polaroid-one">
+        <div class="polaroid-photo has-photo"><img src="assets/memory-07.jfif" alt=""><span>✦</span></div>
+        <figcaption>our little day</figcaption>
+      </figure>
+      <figure class="polaroid polaroid-two">
+        <div class="polaroid-photo has-photo"><img src="assets/memory-08.jfif" alt=""><span>☼</span></div>
+        <figcaption>somewhere with you</figcaption>
+      </figure>
+      <figure class="polaroid polaroid-three">
+        <div class="polaroid-photo has-photo"><img src="assets/memory-09.jfif" alt=""><span>☾</span></div>
+        <figcaption>my favorite view</figcaption>
+      </figure>
+      <figure class="polaroid polaroid-four">
+        <div class="polaroid-photo has-photo"><img src="assets/memory-10.jfif" alt=""><span>♡</span></div>
+        <figcaption>and always</figcaption>
+      </figure>
+    </aside>
+
+    <section class="date-gate" id="date-gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+      <div class="gate-card">
+        <span class="gate-stamp" aria-hidden="true">♡</span>
+        <span class="eyebrow">password first baby </span>
+        <h1 id="gate-title">Our story starts<br>with a date</h1>
+        <form class="gate-form" id="unlock-form">
+          <label class="visually-hidden" for="date-answer">The special date, in month/day/year format</label>
+          <input class="gate-input" id="date-answer" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="8" placeholder="MM/DD/YY" aria-describedby="date-hint gate-error" autofocus required>
+          <button class="button" type="submit">Unlock <span aria-hidden="true"></span></button>
+          <p class="gate-error" id="gate-error" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <div id="site-content" inert aria-hidden="true">
+    <header class="page-shell topbar">
+      <a class="wordmark" href="#" aria-label="Our Little World home">zairoj <span>♡</span></a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#memories">memories</a>
+        <a href="#letter">the letter</a>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero reveal" aria-labelledby="hero-title">
+        <div class="hero-content">
+          <span class="eyebrow">our cute little story</span>
+          <h1 id="hero-title">You, me &<br><em>our never ending laughter</em></h1>
+          <p class="hero-copy">A home for the blurry photos, favorite memories, inside jokes, and the million reasons I love living life with you</p>
+          <a class="button" href="#memories">Wander through us <span aria-hidden="true">♡</span></a>
+          <p class="tiny-note">made with a whole lot of love</p>
+        </div>
+        <button class="parcel-pup find-clue" type="button" aria-label="A little puppy with a parcel" aria-pressed="false">
+          <svg viewBox="0 0 170 130" aria-hidden="true">
+            <ellipse cx="70" cy="117" rx="49" ry="8" fill="rgba(72,43,61,.12)"/>
+            <path d="M30 80c-12-9-13-20-7-25 8-7 17 2 17 10" fill="none" stroke="#9c6a5a" stroke-width="8" stroke-linecap="round"/>
+            <path d="M30 90c0-22 17-38 42-38 22 0 39 15 41 37l-6 15H36z" fill="#d9a77f"/>
+            <path d="M53 39c-9-21-26-20-30-8-4 12 3 28 18 35" fill="#926455"/>
+            <path d="M91 39c10-21 27-19 30-7 3 12-4 27-18 34" fill="#b77e66"/>
+            <ellipse cx="72" cy="43" rx="34" ry="29" fill="#edc59d"/>
+            <ellipse cx="89" cy="53" rx="20" ry="15" fill="#f8e7d2"/>
+            <circle cx="61" cy="40" r="3" fill="#49373f"/>
+            <ellipse cx="97" cy="49" rx="4" ry="3" fill="#49373f"/>
+            <path d="M91 59c3 4 8 4 11 0" fill="none" stroke="#795047" stroke-width="2" stroke-linecap="round"/>
+            <path d="M44 88c6 8 17 8 23 0" fill="none" stroke="#f4dcc6" stroke-width="8" stroke-linecap="round"/>
+            <path d="M101 88c7 8 18 8 24 0" fill="none" stroke="#f4dcc6" stroke-width="8" stroke-linecap="round"/>
+            <rect x="106" y="77" width="48" height="38" rx="4" fill="#b96c83"/>
+            <path d="M127 77v38M106 89h48" stroke="#f6d5bd" stroke-width="5"/>
+            <path d="M129 77c-16-2-15-17-7-16 5 0 8 8 7 16Zm0 0c1-15 15-17 15-9 0 5-7 8-15 9Z" fill="#f6d5bd"/>
+          </svg>
+          <span class="clue-symbol parcel-symbol" aria-hidden="true" hidden>♡</span>
+        </button>
+      </section>
+
+      <section class="section" id="memories" aria-labelledby="memories-title">
+        <div class="section-heading reveal">
+          <span class="eyebrow">short film</span>
+          <h2 id="memories-title">A little film of us</h2>
+          <p>no judging, 'di ako marunong mag edit:))</p>
+        </div>
+        <div class="video-showcase">
+          <article class="video-feature reveal">
+            <div class="video-slot">
+              <video controls playsinline preload="metadata" aria-label="Featured video memory">
+                <source src="assets/featured-video.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-feature-meta">
+              <div><span class="eyebrow">press play</span><h3>The moments we replay</h3><p>For the laughs, the dancing, and all the in-between</p></div>
+              <button class="feature-heart find-clue" type="button" aria-label="A little heart in the memories" aria-pressed="false">
+                <span class="clue-icon" aria-hidden="true">♡</span><span class="clue-symbol" aria-hidden="true" hidden>♡</span>
+              </button>
+            </div>
+          </article>
+          <div class="photo-strip" role="group" aria-label="Small photo memories">
+            <article class="mini-memory reveal" style="--tilt: -4deg">
+              <div class="photo-slot">
+                <img src="assets/memory-01.jfif" alt="Photo memory 1" decoding="async">
+              </div>
+              <p class="mini-caption">our first meet</p>
+            </article>
+            <article class="mini-memory reveal" style="--tilt: 3deg">
+              <div class="photo-slot">
+                <img src="assets/memory-02.jfif" alt="Photo memory 2" decoding="async">
+              </div>
+              <p class="mini-caption">our first cafe</p>
+            </article>
+            <article class="mini-memory reveal" style="--tilt: -2deg">
+              <div class="photo-slot">
+                <img src="assets/memory-03.jfif" alt="Photo memory 3" decoding="async">
+              </div>
+              <p class="mini-caption">my favorite photo of us</p>
+            </article>
+            <article class="mini-memory reveal" style="--tilt: 4deg">
+              <div class="photo-slot">
+                <img src="assets/memory-04.jfif" alt="Photo memory 4" decoding="async">
+              </div>
+              <p class="mini-caption">first night together</p>
+            </article>
+            <article class="mini-memory reveal" style="--tilt: -3deg">
+              <div class="photo-slot">
+                <img src="assets/memory-05.jfif" alt="Photo memory 5" decoding="async">
+              </div>
+              <p class="mini-caption">a sweet little moment</p>
+            </article>
+            <button class="mini-memory flip-memory find-clue reveal" style="--tilt: 2deg" type="button" aria-label="A keepsake photo" aria-pressed="false">
+              <span class="flip-inner">
+                <span class="flip-face flip-front" aria-hidden="true"><img class="memory-photo" src="assets/memory-06.jfif" alt="" decoding="async"><span class="clue-icon">✿</span><small>a little keepsake</small></span>
+                <span class="flip-face flip-back" aria-hidden="true"><span class="clue-symbol" aria-hidden="true" hidden>♡</span><small>another little side</small></span>
+              </span>
+              <span class="mini-caption">our last hangout</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="letter" aria-labelledby="letter-title">
+        <div class="section-heading reveal">
+          <span class="eyebrow">a message for my baby</span>
+          <h2 id="letter-title">A little letter for you</h2>
+          <p>A little note is waiting. Press below when you’re ready </p>
+        </div>
+        <div class="letter-wrap reveal">
+          <div class="letter-actions">
+            <button class="button letter-trigger" id="write-letter" type="button" aria-controls="love-letter" aria-live="polite">Open your letter <span aria-hidden="true">♡</span></button>
+          </div>
+          <article class="letter" id="love-letter">
+            <span class="eyebrow">to my favorite person</span>
+            <span class="letter-seal" id="letter-seal" aria-hidden="true">♡</span>
+            <p class="letter-prompt" id="letter-prompt">Happiest 6th monthsary baby</p>
+            <h3 data-write></h3>
+            <p data-write></p>
+            <p data-write></p>
+            <p class="signoff" data-write></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="little-puzzle" aria-labelledby="puzzle-title">
+        <div class="section-heading reveal">
+          <span class="eyebrow">one last little puzzle</span>
+          <h2 id="puzzle-title">A tiny treasure hunt</h2>
+          <p>i promised you something before right:)</p>
+        </div>
+        <button class="proposal-close" id="close-proposal" type="button" hidden>Return to our page</button>
+        <div class="puzzle-card reveal">
+          <p class="puzzle-intro">find all the hidden hearts all throughout the web</p>
+          <ol class="riddle-list" id="riddle-list" aria-label="Little riddles">
+            <li class="riddle-card"><span class="riddle-mark" aria-hidden="true">✧</span><p>a cute little dog holding a present</p></li>
+            <li class="riddle-card"><span class="riddle-mark" aria-hidden="true">✧</span><p>our short film</p></li>
+            <li class="riddle-card"><span class="riddle-mark" aria-hidden="true">✧</span><p>one of our memories</p></li>
+            <li class="riddle-card"><span class="riddle-mark" aria-hidden="true">✧</span><p>one last heart somewhere near the end</p></li>
+          </ol>
+          <div class="clue-progress">
+            <span id="clue-progress" role="status">0 of 4 little signs found</span>
+            <div class="phrase-pieces" id="phrase-pieces" role="group" aria-label="Collected heart symbols">
+              <span class="phrase-piece" aria-hidden="true"><span class="box-heart">♡</span></span>
+              <span class="phrase-piece" aria-hidden="true"><span class="box-heart">♡</span></span>
+              <span class="phrase-piece" aria-hidden="true"><span class="box-heart">♡</span></span>
+              <span class="phrase-piece" aria-hidden="true"><span class="box-heart">♡</span></span>
+            </div>
+          </div>
+          <p class="reveal-tease" id="reveal-tease" aria-live="polite" hidden>The little hearts are gathering…</p>
+          <div class="response-panel" id="response-panel" hidden>
+            <article class="question-postcard">
+              <span class="eyebrow">A sincere question</span>
+              <h3 id="proposal-title" tabindex="-1">May I court you?</h3>
+              <p>i just feel like we could be something a lot more:)</p>
+            </article>
+            <form class="proposal-response-form" id="proposal-response-form">
+              <label class="visually-hidden" for="proposal-answer">Your answer</label>
+              <input class="proposal-answer" id="proposal-answer" type="text" autocomplete="off" placeholder="what will it be baby?" aria-describedby="proposal-answer-hint" required>
+              <button class="button proposal-submit" type="submit">Send answer</button>
+            </form>
+            <p class="visually-hidden" id="proposal-answer-hint">Answer yes, no, or type another response.</p>
+            <p class="answer-response" id="answer-response" aria-live="polite" hidden></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-shell footer">
+      <p>our little world <button class="footer-heart find-clue" type="button" aria-label="A tiny footer decoration" aria-pressed="false"><span class="clue-icon" aria-hidden="true">♡</span><span class="clue-symbol" aria-hidden="true" hidden>♡</span></button> forever in progress</p>
+    </footer>
+    </div>
+
+    <div class="yes-celebration" id="yes-celebration" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden>
+      <div class="yes-celebration-inner">
+        <span class="yes-celebration-bloom" aria-hidden="true"></span>
+        <h2>YES!!!</h2>
+        <p>I Love You to Infinity and Beyond Babyyy
+        </p>
+      </div>
+    </div>
+    <div class="sad-screen" id="sad-screen" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" hidden>
+      <div class="sad-screen-inner">
+        <span class="sad-face" aria-hidden="true">😢</span>
+        <p class="sad-message" id="sad-message"></p>
+      </div>
+    </div>
+
+    <script>
+      const body = document.body;
+      const gate = document.getElementById("date-gate");
+      const siteContent = document.getElementById("site-content");
+      const unlockForm = document.getElementById("unlock-form");
+      const dateAnswer = document.getElementById("date-answer");
+      const gateError = document.getElementById("gate-error");
+      const correctDate = "05/21/26";
+      const letter = document.getElementById("love-letter");
+      const letterButton = document.getElementById("write-letter");
+      const letterParts = Array.from(letter.querySelectorAll("[data-write]"));
+      const proposalForm = document.getElementById("proposal-response-form");
+      const proposalSubmit = proposalForm.querySelector(".proposal-submit");
+      const proposalAnswer = document.getElementById("proposal-answer");
+      const answerResponse = document.getElementById("answer-response");
+      const yesCelebration = document.getElementById("yes-celebration");
+      const sadScreen = document.getElementById("sad-screen");
+      const sadMessage = document.getElementById("sad-message");
+      const letterSeal = document.getElementById("letter-seal");
+      const letterPrompt = document.getElementById("letter-prompt");
+      const letterCopy = [
+        "My Dearest potpot,",
+        "6 months of pure genuine love, 6 months of never ending arguments and conversations, 6 months of commitment and consistency, 6 months of nothing but laughter and happiness. always, im so happy to have u as my baby. and there's nothing i could ask for as you're everything i need. thank you for never ending choosing to love, stay, and bearing with me despite all the shortcomings i've had.",
+        "i will never get bored nor tired of loving u every single day, even on the days where we fall short of a couple, i hope u still remember how much i love u, and how much im willing to do for u. more monthsary, memories, jokes, arguments, never ending tampuhan and communication with you to come baby. and hopefully we can experience our first anniversary. and until we can finally afford to live together. im looking forward into making our dreams come true together baby.",
+        "i love you to infinity and beyond always and forever ♡"
+      ];
+      if (letterParts.length !== letterCopy.length) {
+        throw new Error("Every letter part must have matching copy.");
+      }
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const soundSequences = {
+        unlock: [392, 523.25, 659.25, 783.99],
+        clue: [659.25, 783.99],
+        letter: [440, 554.37, 659.25],
+        reveal: [392, 493.88, 587.33],
+        yes: [523.25, 659.25, 783.99, 1046.5],
+        no: [329.63, 293.66, 261.63],
+        other: [440, 392, 440]
+      };
+      let soundContext;
+      let isAnswerReactionActive = false;
+      let isCelebratingYes = false;
+
+      function playSoundCue(cue) {
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) return;
+        if (!Object.prototype.hasOwnProperty.call(soundSequences, cue)) {
+          throw new Error("Sound cue is not defined.");
+        }
+        if (!soundContext) soundContext = new AudioContextConstructor();
+
+        const playNotes = () => {
+          const startTime = soundContext.currentTime;
+          soundSequences[cue].forEach((frequency, index) => {
+            const noteTime = startTime + index * .11;
+            const noteDuration = cue === "clue" ? .22 : .32;
+            const oscillator = soundContext.createOscillator();
+            const gain = soundContext.createGain();
+            oscillator.type = cue === "no" ? "triangle" : "sine";
+            oscillator.frequency.setValueAtTime(frequency, noteTime);
+            gain.gain.setValueAtTime(.001, noteTime);
+            gain.gain.exponentialRampToValueAtTime(.035, noteTime + .025);
+            gain.gain.exponentialRampToValueAtTime(.001, noteTime + noteDuration);
+            oscillator.connect(gain);
+            gain.connect(soundContext.destination);
+            oscillator.start(noteTime);
+            oscillator.stop(noteTime + noteDuration + .01);
+          });
+        };
+
+        if (soundContext.state !== "running") {
+          soundContext.resume().then(playNotes).catch((error) => {
+            console.error("Could not start the proposal sound.", error);
+          });
+          return;
+        }
+        playNotes();
+      }
+
+      function finishLetterWriting() {
+        letter.classList.remove("is-writing");
+        letter.removeAttribute("aria-busy");
+        letterButton.disabled = false;
+        letterButton.innerHTML = 'Read your letter again <span aria-hidden="true">♡</span>';
+      }
+
+      async function typeLetterPart(part, text) {
+        if (prefersReducedMotion) {
+          part.textContent = text;
+          return;
+        }
+
+        const textNode = document.createTextNode("");
+        const cursor = document.createElement("span");
+        cursor.className = "typing-cursor";
+        cursor.setAttribute("aria-hidden", "true");
+        part.replaceChildren(textNode, cursor);
+
+        for (const character of text) {
+          textNode.appendData(character);
+          const delay = /[.!?]/.test(character) ? 62 : /[,;:]/.test(character) ? 26 : 9;
+          await new Promise((resolve) => window.setTimeout(resolve, delay));
+        }
+        cursor.remove();
+      }
+
+      letterButton.addEventListener("click", async () => {
+        playSoundCue("letter");
+        letterButton.disabled = true;
+        letterButton.textContent = "Writing your letter…";
+        letter.setAttribute("aria-busy", "true");
+        letterParts.forEach((part) => {
+          part.textContent = "";
+        });
+        letter.classList.remove("is-writing", "is-unfolding", "is-signoff-emphasized");
+        void letter.offsetWidth;
+        letter.classList.add("is-unfolding");
+
+        await new Promise((resolve) => window.setTimeout(resolve, prefersReducedMotion ? 0 : 500));
+        letterSeal.hidden = true;
+        letterPrompt.hidden = true;
+        letter.classList.remove("is-unfolding");
+        letter.classList.add("is-writing");
+        for (let index = 0; index < letterParts.length; index += 1) {
+          await typeLetterPart(letterParts[index], letterCopy[index]);
+          if (!prefersReducedMotion && index < letterParts.length - 1) {
+            await new Promise((resolve) => window.setTimeout(resolve, 180));
+          }
+        }
+        const signoff = letterParts[letterParts.length - 1];
+        [
+          ["signoff-flourish signoff-flourish--heart", "💖"],
+          ["signoff-flourish signoff-flourish--spark", "✨"]
+        ].forEach(([className, symbol]) => {
+          const flourish = document.createElement("span");
+          flourish.className = className;
+          flourish.setAttribute("aria-hidden", "true");
+          flourish.textContent = symbol;
+          signoff.appendChild(flourish);
+        });
+        letter.classList.add("is-signoff-emphasized");
+        finishLetterWriting();
+      });
+
+      dateAnswer.addEventListener("input", () => {
+        const cursor = dateAnswer.selectionStart === null ? dateAnswer.value.length : dateAnswer.selectionStart;
+        const digitsBeforeCursor = dateAnswer.value.slice(0, cursor).replace(/\D/g, "").length;
+        const digits = dateAnswer.value.replace(/\D/g, "").slice(0, 6);
+        let formatted = digits.slice(0, 2);
+        if (digits.length >= 2) formatted += "/";
+        if (digits.length > 2) formatted += digits.slice(2, 4);
+        if (digits.length >= 4) formatted += "/";
+        if (digits.length > 4) formatted += digits.slice(4, 6);
+        dateAnswer.value = formatted;
+        const formattedCursor = Math.min(
+          digitsBeforeCursor + (digitsBeforeCursor >= 2 ? 1 : 0) + (digitsBeforeCursor >= 4 ? 1 : 0),
+          formatted.length
+        );
+        dateAnswer.setSelectionRange(formattedCursor, formattedCursor);
+        gateError.textContent = "";
+        dateAnswer.removeAttribute("aria-invalid");
+      });
+
+      function createUnlockBurst() {
+        const stamp = document.querySelector(".gate-stamp").getBoundingClientRect();
+        const centerX = stamp.left + stamp.width / 2;
+        const centerY = stamp.top + stamp.height / 2;
+        const particleCount = 16;
+        for (let index = 0; index < particleCount; index += 1) {
+          const angle = (Math.PI * 2 * index) / particleCount;
+          const distance = 105 + (index % 3) * 46;
+          const particle = document.createElement("span");
+          particle.className = "unlock-heart";
+          particle.setAttribute("aria-hidden", "true");
+          particle.textContent = index % 4 === 0 ? "✦" : "♡";
+          particle.style.left = `${centerX}px`;
+          particle.style.top = `${centerY}px`;
+          particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+          particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+          document.body.appendChild(particle);
+          window.setTimeout(() => particle.remove(), 1400);
+        }
+      }
+
+      unlockForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (dateAnswer.value.trim() !== correctDate) {
+          gateError.textContent = "luh kinalimutan?";
+          dateAnswer.setAttribute("aria-invalid", "true");
+          unlockForm.classList.remove("is-shaking");
+          void unlockForm.offsetWidth;
+          unlockForm.classList.add("is-shaking");
+          dateAnswer.focus();
+          return;
+        }
+
+        gateError.textContent = "";
+        dateAnswer.removeAttribute("aria-invalid");
+        playSoundCue("unlock");
+        createUnlockBurst();
+        body.classList.add("is-unlocking");
+        gate.classList.add("is-opening");
+        window.setTimeout(() => body.classList.remove("is-unlocking"), 6600);
+        window.setTimeout(() => {
+          gate.hidden = true;
+          siteContent.removeAttribute("inert");
+          siteContent.removeAttribute("aria-hidden");
+          body.classList.remove("is-locked");
+          document.getElementById("hero-title").focus();
+        }, 650);
+      });
+
+      document.getElementById("hero-title").setAttribute("tabindex", "-1");
+
+      body.classList.add("motion-ready");
+      const revealItems = document.querySelectorAll(".reveal");
+      if ("IntersectionObserver" in window) {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.remove("is-pending");
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12 });
+        revealItems.forEach((item) => {
+          item.classList.add("is-pending");
+          revealObserver.observe(item);
+        });
+      }
+
+      let pointerFrame = 0;
+      let pointerX = 0;
+      let pointerY = 0;
+      window.addEventListener("pointermove", (event) => {
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+        if (pointerFrame) return;
+        pointerFrame = window.requestAnimationFrame(() => {
+          body.style.setProperty("--pointer-x", `${(pointerX / window.innerWidth) * 100}%`);
+          body.style.setProperty("--pointer-y", `${(pointerY / window.innerHeight) * 100}%`);
+          pointerFrame = 0;
+        });
+      }, { passive: true });
+
+      document.addEventListener("pointerdown", (event) => {
+        if (body.classList.contains("is-locked")) return;
+        if (event.target instanceof Element && event.target.closest("a, button, input, label, video")) return;
+        const spark = document.createElement("span");
+        spark.className = "love-spark";
+        spark.setAttribute("aria-hidden", "true");
+        spark.textContent = Math.random() > 0.5 ? "♡" : "✦";
+        spark.style.left = `${event.clientX}px`;
+        spark.style.top = `${event.clientY}px`;
+        document.body.appendChild(spark);
+        window.setTimeout(() => spark.remove(), 950);
+      });
+
+      const foundClues = new Set();
+      const shuffle = (items) => {
+        for (let index = items.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
+        }
+        return items;
+      };
+      const riddleList = document.getElementById("riddle-list");
+      shuffle(Array.from(riddleList.children)).forEach((riddle) => riddleList.appendChild(riddle));
+      const clueButtons = Array.from(document.querySelectorAll(".find-clue"));
+      const clueProgress = document.getElementById("clue-progress");
+      const phrasePieces = Array.from(document.querySelectorAll(".phrase-piece"));
+      const responsePanel = document.getElementById("response-panel");
+      const revealTease = document.getElementById("reveal-tease");
+      const puzzleCard = document.querySelector(".puzzle-card");
+      const proposalClose = document.getElementById("close-proposal");
+      const proposalTitle = document.getElementById("proposal-title");
+      const puzzleHeading = document.getElementById("puzzle-title");
+      const puzzleSection = document.getElementById("little-puzzle");
+      const proposalBackground = [
+        siteContent.querySelector(".topbar"),
+        ...siteContent.querySelectorAll("main > section:not(#little-puzzle)"),
+        siteContent.querySelector(".footer")
+      ];
+      const clueCount = clueButtons.length;
+
+      if (!clueCount || phrasePieces.length !== clueCount) {
+        throw new Error("Every puzzle clue must have one matching heart box.");
+      }
+
+      function updateClueProgress() {
+        const allCluesFound = foundClues.size === clueCount;
+        clueProgress.textContent = allCluesFound
+          ? `All ${clueCount} little signs found`
+          : `${foundClues.size} of ${clueCount} little signs found`;
+      }
+
+      async function flyHeartToBox(source, target) {
+        if (prefersReducedMotion) {
+          target.scrollIntoView({ behavior: "auto", block: "center" });
+          target.classList.add("is-receiving");
+          window.setTimeout(() => target.classList.remove("is-receiving"), 600);
+          return;
+        }
+
+        if (source.closest(".flip-memory")) {
+          await new Promise((resolve) => window.setTimeout(resolve, 680));
+        }
+
+        const sourceRect = source.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const startX = sourceRect.left + sourceRect.width / 2;
+        const startY = sourceRect.top + sourceRect.height / 2;
+        const targetX = targetRect.left + targetRect.width / 2;
+        const targetDocumentY = targetRect.top + window.scrollY + targetRect.height / 2;
+        const startScrollY = window.scrollY;
+        const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        const targetScrollY = Math.max(0, Math.min(maxScrollY, targetDocumentY - window.innerHeight * .52));
+        const startScrollX = window.scrollX;
+        const duration = Math.min(1900, Math.max(1000, Math.abs(targetScrollY - startScrollY) * .45));
+        const startedAt = performance.now();
+        const root = document.documentElement;
+        const previousScrollBehavior = root.style.scrollBehavior;
+        const requestFlightFrame = (callback) => {
+          if (document.visibilityState === "hidden") {
+            window.setTimeout(() => callback(performance.now()), 32);
+          } else {
+            window.requestAnimationFrame(callback);
+          }
+        };
+        const flight = document.createElement("span");
+        flight.className = "heart-flight";
+        flight.setAttribute("aria-hidden", "true");
+        flight.textContent = "♡";
+        document.body.appendChild(flight);
+        root.style.scrollBehavior = "auto";
+
+        try {
+          await new Promise((resolve) => {
+            function animateFlight(now) {
+              const progress = Math.min(1, (now - startedAt) / duration);
+              const eased = progress * progress * (3 - 2 * progress);
+              const currentScrollY = startScrollY + (targetScrollY - startScrollY) * eased;
+              const targetScreenY = targetDocumentY - currentScrollY;
+              const x = startX + (targetX - startX) * eased;
+              const y = startY + (targetScreenY - startY) * eased - Math.sin(progress * Math.PI) * 72;
+              window.scrollTo(startScrollX, currentScrollY);
+              flight.style.left = `${x}px`;
+              flight.style.top = `${y}px`;
+              flight.style.transform = `translate(-50%, -50%) scale(${1 + Math.sin(progress * Math.PI) * .28}) rotate(${Math.sin(progress * Math.PI) * 16}deg)`;
+              flight.style.opacity = String(1 - Math.max(0, progress - .86) * 5);
+
+              if (progress < 1) {
+                requestFlightFrame(animateFlight);
+              } else {
+                resolve();
+              }
+            }
+            requestFlightFrame(animateFlight);
+          });
+        } finally {
+          flight.remove();
+          root.style.scrollBehavior = previousScrollBehavior;
+        }
+
+        target.classList.add("is-receiving");
+        window.setTimeout(() => target.classList.remove("is-receiving"), 600);
+      }
+
+      async function revealCompletedPuzzle() {
+        if (!prefersReducedMotion) {
+          revealTease.hidden = false;
+          puzzleCard.classList.add("is-building");
+          await new Promise((resolve) => window.setTimeout(resolve, 1100));
+          puzzleCard.classList.remove("is-building");
+        }
+        revealTease.hidden = true;
+        responsePanel.hidden = false;
+        enterProposalMode();
+        if (!prefersReducedMotion) celebratePuzzle();
+      }
+
+      function enterProposalMode() {
+        playSoundCue("reveal");
+        body.classList.add("is-proposal");
+        proposalClose.hidden = false;
+        puzzleSection.setAttribute("role", "dialog");
+        puzzleSection.setAttribute("aria-modal", "true");
+        puzzleSection.setAttribute("aria-labelledby", "proposal-title");
+        proposalBackground.forEach((element) => {
+          element.setAttribute("inert", "");
+          element.setAttribute("aria-hidden", "true");
+        });
+        window.requestAnimationFrame(() => {
+          responsePanel.scrollIntoView({
+            behavior: prefersReducedMotion ? "auto" : "smooth",
+            block: "center"
+          });
+          proposalTitle.focus({ preventScroll: true });
+        });
+      }
+
+      function exitProposalMode(returnToHome = false) {
+        body.classList.remove("is-proposal");
+        proposalClose.hidden = true;
+        proposalClose.disabled = false;
+        puzzleSection.removeAttribute("role");
+        puzzleSection.removeAttribute("aria-modal");
+        puzzleSection.removeAttribute("aria-labelledby");
+        proposalBackground.forEach((element) => {
+          element.removeAttribute("inert");
+          element.removeAttribute("aria-hidden");
+        });
+        if (returnToHome) {
+          window.requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+            document.getElementById("hero-title").focus({ preventScroll: true });
+          });
+          return;
+        }
+        puzzleHeading.setAttribute("tabindex", "-1");
+        puzzleHeading.focus();
+      }
+
+      proposalClose.addEventListener("click", () => exitProposalMode());
+      puzzleSection.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          if (isAnswerReactionActive || isCelebratingYes) {
+            event.preventDefault();
+            return;
+          }
+          exitProposalMode();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(puzzleSection.querySelectorAll(
+          "button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex='-1'])"
+        )).filter((element) => element.getClientRects().length);
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      });
+
+      function celebratePuzzle() {
+        if (prefersReducedMotion) return;
+        const postcard = document.querySelector(".question-postcard");
+        const bounds = postcard.getBoundingClientRect();
+        const centerX = bounds.left + bounds.width / 2;
+        const centerY = bounds.top + bounds.height / 2;
+        const symbols = ["·", "✦", "·", "✧"];
+
+        for (let index = 0; index < 18; index += 1) {
+          const angle = (Math.PI * 2 * index) / 18 + (Math.random() - .5) * .2;
+          const distance = 55 + Math.random() * 100;
+          const particle = document.createElement("span");
+          particle.className = "proposal-particle";
+          particle.setAttribute("aria-hidden", "true");
+          particle.textContent = symbols[index % symbols.length];
+          particle.style.left = `${centerX}px`;
+          particle.style.top = `${centerY}px`;
+          particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+          particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+          particle.style.setProperty("--turn", `${Math.round(Math.random() * 90 - 45)}deg`);
+          particle.addEventListener("animationend", () => particle.remove(), { once: true });
+          document.body.appendChild(particle);
+          window.setTimeout(() => particle.remove(), 1200);
+        }
+      }
+
+      function createYesBurst() {
+        if (prefersReducedMotion) return;
+        const symbols = ["💖", "💗", "💕", "🌸", "🌷", "🌹", "🌺", "💐", "✿", "❀", "♡", "✨"];
+        const burstCount = 96;
+        const waveSize = 32;
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const maxDistance = Math.hypot(centerX, centerY);
+
+        for (let index = 0; index < burstCount; index += 1) {
+          const wave = Math.floor(index / waveSize);
+          const angle = (Math.PI * 2 * (index % waveSize)) / waveSize + wave * .13 + (Math.random() - .5) * .14;
+          const distance = maxDistance * (.42 + Math.random() * .62);
+          const delay = wave * .12 + Math.random() * .2;
+          const duration = 3.6 + Math.random() * 1.8;
+          const particle = document.createElement("span");
+          particle.className = "yes-particle";
+          particle.setAttribute("aria-hidden", "true");
+          particle.textContent = symbols[index % symbols.length];
+          particle.style.left = `${centerX}px`;
+          particle.style.top = `${centerY}px`;
+          particle.style.fontSize = `${20 + Math.random() * 34}px`;
+          particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+          particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+          particle.style.setProperty("--turn", `${Math.round(Math.random() * 540 - 270)}deg`);
+          particle.style.setProperty("--scale", `${.45 + Math.random() * 1.1}`);
+          particle.style.setProperty("--duration", `${duration}s`);
+          particle.style.setProperty("--delay", `${delay}s`);
+          particle.addEventListener("animationend", () => particle.remove(), { once: true });
+          document.body.appendChild(particle);
+          window.setTimeout(() => particle.remove(), (duration + delay + .3) * 1000);
+        }
+      }
+
+      function beginYesCelebration() {
+        isCelebratingYes = true;
+        proposalAnswer.disabled = true;
+        proposalSubmit.disabled = true;
+        proposalForm.hidden = true;
+        proposalClose.hidden = true;
+        yesCelebration.hidden = false;
+        yesCelebration.classList.remove("is-fading");
+        void yesCelebration.offsetWidth;
+        yesCelebration.classList.add("is-active");
+        yesCelebration.focus({ preventScroll: true });
+        createYesBurst();
+
+        window.setTimeout(() => {
+          yesCelebration.classList.remove("is-active");
+          yesCelebration.classList.add("is-fading");
+          body.classList.add("is-homecoming");
+          exitProposalMode(true);
+          window.setTimeout(() => {
+            yesCelebration.hidden = true;
+            yesCelebration.classList.remove("is-fading");
+            body.classList.remove("is-homecoming");
+            isCelebratingYes = false;
+          }, prefersReducedMotion ? 0 : 3900);
+        }, prefersReducedMotion ? 1400 : 5100);
+      }
+
+      function showSadReaction(message, allowRetry) {
+        isAnswerReactionActive = true;
+        sadMessage.textContent = message;
+        sadScreen.hidden = false;
+        sadScreen.classList.remove("is-leaving");
+        void sadScreen.offsetWidth;
+        sadScreen.classList.add("is-showing");
+        sadScreen.focus({ preventScroll: true });
+        proposalClose.disabled = true;
+        proposalAnswer.value = "";
+
+        if (allowRetry) {
+          proposalAnswer.disabled = true;
+          proposalSubmit.disabled = true;
+        } else {
+          proposalForm.hidden = true;
+        }
+
+        window.setTimeout(() => {
+          sadScreen.classList.remove("is-showing");
+          sadScreen.classList.add("is-leaving");
+          window.setTimeout(() => {
+            sadScreen.hidden = true;
+            sadScreen.classList.remove("is-leaving");
+            isAnswerReactionActive = false;
+            proposalClose.disabled = false;
+            if (allowRetry) {
+              proposalAnswer.disabled = false;
+              proposalSubmit.disabled = false;
+              proposalAnswer.focus();
+            } else {
+              proposalClose.focus();
+            }
+          }, prefersReducedMotion ? 0 : 650);
+        }, prefersReducedMotion ? 900 : 2300);
+      }
+
+      let isHeartFlying = false;
+      clueButtons.forEach((button) => {
+        button.addEventListener("click", async () => {
+          if (isHeartFlying || foundClues.has(button)) return;
+          const symbol = button.querySelector(".clue-symbol");
+          if (!symbol) throw new Error("Puzzle clue is missing its heart symbol.");
+          playSoundCue("clue");
+
+          const nextBox = phrasePieces[foundClues.size];
+          if (!nextBox) throw new Error("Puzzle clue has no matching heart box.");
+          foundClues.add(button);
+          symbol.hidden = false;
+          button.classList.add("is-found");
+          button.setAttribute("aria-pressed", "true");
+          button.setAttribute("aria-label", "A little sign found");
+          nextBox.classList.add("is-filled");
+
+          const flipBack = button.querySelector(".flip-back");
+          if (flipBack) flipBack.removeAttribute("aria-hidden");
+          updateClueProgress();
+
+          isHeartFlying = true;
+          clueButtons.forEach((clue) => {
+            clue.disabled = true;
+          });
+          try {
+            await flyHeartToBox(symbol, nextBox);
+          } finally {
+            isHeartFlying = false;
+            clueButtons.forEach((clue) => {
+              clue.disabled = foundClues.has(clue);
+            });
+          }
+
+          if (foundClues.size === clueCount) {
+            await revealCompletedPuzzle();
+          }
+        });
+      });
+
+      proposalForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const answer = proposalAnswer.value.trim().toLocaleLowerCase();
+        const isAffirmative = /^(yes|y|yeah|yep|sure|absolutely)\b/.test(answer);
+        const isNegative = /^(no|n|nope|nah)\b/.test(answer);
+        if (isAffirmative) {
+          playSoundCue("yes");
+          answerResponse.textContent = "awww";
+          answerResponse.hidden = false;
+          answerResponse.classList.remove("is-visible");
+          void answerResponse.offsetWidth;
+          answerResponse.classList.add("is-visible");
+          beginYesCelebration();
+          return;
+        }
+
+        playSoundCue(isNegative ? "no" : "other");
+        answerResponse.textContent = isNegative
+          ? "awww"
+          : "awww";
+        answerResponse.hidden = false;
+        answerResponse.classList.remove("is-visible");
+        void answerResponse.offsetWidth;
+        answerResponse.classList.add("is-visible");
+        showSadReaction(
+          isNegative ? "Final Answer??" : "Are u Sureee?",
+          !isNegative
+        );
+      });
+
+    </script>
+  </body>
+</html>
